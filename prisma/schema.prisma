@@ -1,0 +1,186 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum TripStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+/* --- Yeni enum-lar: RentaCar üçün --- */
+enum Transmission {
+  MANUAL
+  AUTOMATIC
+}
+
+enum FuelType {
+  GASOLINE
+  DIESEL
+  HYBRID
+  ELECTRIC
+}
+
+model User {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  email          String    @unique
+  username       String    @unique
+  photo          String
+  firstName      String?
+  lastName       String?
+  hashedPassword String
+
+  trips          Trip[]        // 1-N: User -> Trip
+  bookings       Booking[]     // 1-N: User -> Booking
+}
+
+model Hotel {
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  description   String?
+  location      String
+  address       String
+  rating        Float      @default(0.0)
+  photos        String[]
+  pricePerNight Float
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  rooms         Room[]
+  // Explicit M:N: Hotel <-> Trip
+  tripHotels    TripHotel[]
+}
+
+model Room {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  hotelId     String     @db.ObjectId
+  hotel       Hotel      @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  type        String
+  price       Float
+  amenities   String[]
+  photos      String[]
+  isAvailable Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  bookings    Booking[]  // 1-N: Room -> Booking
+}
+
+model Trip {
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+
+  // User (opsional)
+  userId      String?     @db.ObjectId
+  user        User?       @relation(fields: [userId], references: [id])
+
+  // Trip <-> Hotel explicit M:N
+  tripHotels  TripHotel[]
+
+  // Məlumatlar
+  name        String
+  photos      String[]
+  location    String
+  checkIn     DateTime
+  checkOut    DateTime
+  guests      Int         @default(1)
+  notes       String?
+
+  totalPrice  Float
+  currency    String      @default("USD")
+  status      TripStatus  @default(PENDING)
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  bookings    Booking[]   // 1-N: Trip -> Booking
+}
+
+// Explicit join: hər sətr bir Trip–Hotel əlaqəsidir
+model TripHotel {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  tripId     String   @db.ObjectId
+  trip       Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  hotelId    String   @db.ObjectId
+  hotel      Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+
+  hotelName  String
+  createdAt  DateTime @default(now())
+
+  @@unique([tripId, hotelId]) // eyni hotel eyni tripdə bir dəfə
+}
+
+model Booking {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tripId    String   @db.ObjectId
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  roomId    String   @db.ObjectId
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/* ===============================
+   Region (Bölgə) + RentaCar
+   Explicit M:N: RentaCar <-> Region
+=============================== */
+model Region {
+  id             String            @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  code           String?           @unique
+  createdAt      DateTime          @default(now())
+
+  rentaCarLinks  RentaCarRegion[]
+}
+
+model RentaCar {
+  id             String            @id @default(auto()) @map("_id") @db.ObjectId
+
+  name           String
+  currency      String      @default("USD")
+  brand          String
+  model          String
+  year           Int?
+  seats          Int               @default(4)
+  transmission   Transmission
+  fuelType       FuelType
+  pricePerDay    Float
+  photos         String[]
+  rating         Float             @default(0.0)
+  location       String?
+  available      Boolean           @default(true)
+
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  regionLinks    RentaCarRegion[]
+}
+
+model RentaCarRegion {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+
+  rentaCarId  String    @db.ObjectId
+  rentaCar    RentaCar  @relation(fields: [rentaCarId], references: [id], onDelete: Cascade)
+
+  regionId    String    @db.ObjectId
+  region      Region    @relation(fields: [regionId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime  @default(now())
+
+  @@unique([rentaCarId, regionId])
+}
+
