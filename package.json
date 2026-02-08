@@ -12,7 +12,7 @@
   "dependencies": {
     "@clerk/nextjs": "^6.35.2",
     "@hookform/resolvers": "^5.0.1",
-    "@prisma/client": "^7.3.0",
+    "@prisma/client": "6.19.0",
     "@radix-ui/react-accordion": "^1.2.10",
     "@radix-ui/react-alert-dialog": "^1.1.13",
     "@radix-ui/react-aspect-ratio": "^1.1.6",
@@ -52,7 +52,7 @@
     "next": "15.3.2",
     "next-auth": "^4.24.13",
     "next-themes": "^0.4.6",
-    "prisma": "^7.3.0",
+    "prisma": "6.19.0",
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0",
     "react-countup": "^6.5.3",
     "react-day-picker": "^8.10.1",
@@ -71,7 +71,7 @@
     "tsx": "^4.20.3",
     "vaul": "^1.1.2",
     "zod": "^3.24.4",
-    "zustand": "^5.0.8"
+    "zustand": "^5.0.11"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

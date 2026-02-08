@@ -38,7 +38,7 @@ const data = {
         },
         {
           title: "Hotel List",
-          url: "/hotels/hotel-list",
+          url: "/hotels/list",
           isActive: true,
         },
      
