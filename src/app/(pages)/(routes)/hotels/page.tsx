@@ -40,7 +40,7 @@ import EditHotelForm from "./_component/EditHotelForm"
 
 
 
-export const baseColumns: ColumnDef<Hotel>[] = [
+const baseColumns: ColumnDef<Hotel>[] = [
     {
         accessorKey: "name",
         header: "Hotel Name",
@@ -85,7 +85,7 @@ export const baseColumns: ColumnDef<Hotel>[] = [
   
 ]
 
-export const HotelTable = () => {
+const HotelTable = () => {
     const { hotels, totalCount, fetchHotels } = useHotelStore();
     const [searchTerm, setSearchTerm] = React.useState<string>("");
     const [page, setPage] = React.useState<number>(1);
