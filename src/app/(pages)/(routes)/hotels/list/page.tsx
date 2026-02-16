@@ -35,7 +35,7 @@ import {
 import { Hotel, useHotelStore } from "@/store/useHotelStore"
 import ActionCell from "./ActionCell"
 
-// import EditHotelForm from "./EditHotelForm"
+import EditHotelForm from "./EditHotelForm"
 
 
 
@@ -92,17 +92,13 @@ export const HotelTable = () => {
         return () => clearTimeout(delayDebounceFn);
     }, [searchTerm, fetchHotels]);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [selectedHotel, setSelectedHotel] = React.useState<Hotel | null>(null);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
 
-
-    const  handleEditClick = (hotel: Hotel)=>{
+    const handleEditClick = React.useCallback((hotel: Hotel) => {
         setSelectedHotel(hotel)
         setIsEditDialogOpen(true)
-
-    }
+    }, [])
 
     const columns = React.useMemo<ColumnDef<Hotel>[]>(() => {
         return[
@@ -122,7 +118,7 @@ export const HotelTable = () => {
                 }                 
             }
         ]
-    },[])
+    },[handleEditClick])
 
 
     const table = useReactTable({
@@ -257,11 +253,15 @@ export const HotelTable = () => {
                     </Button>
                 </div>
             </div>
-            {/* <EditHotelForm
-            open={isEditDialogOpen}
-            onOpenChange={setIsEditDialogOpen}
-            initialHotel={selectedHotel}
-            /> */}
+            <EditHotelForm
+                open={isEditDialogOpen}
+                onOpenChange={(open) => {
+                    setIsEditDialogOpen(open)
+                    if (!open) setSelectedHotel(null)
+                }}
+                initialHotel={selectedHotel}
+                onUpdated={() => fetchHotels({ name: searchTerm, page })}
+            />
         </div>
     )
 }
