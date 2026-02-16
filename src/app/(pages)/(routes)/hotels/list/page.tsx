@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/table"
 import { Hotel, useHotelStore } from "@/store/useHotelStore"
 import ActionCell from "./ActionCell"
+import AddHotelDialog from "./AddHotelDialog"
 
 import EditHotelForm from "./EditHotelForm"
 
@@ -70,6 +71,7 @@ export const HotelTable = () => {
     const { hotels, totalCount, fetchHotels } = useHotelStore();
     const [searchTerm, setSearchTerm] = React.useState<string>("");
     const [page, setPage] = React.useState<number>(1);
+    const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
 
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -146,39 +148,44 @@ export const HotelTable = () => {
 
     return (
         <div className="w-full">
-            <div className="flex items-center py-4">
+            <div className="flex items-center gap-2 py-4">
                 <Input
                     placeholder="Filter emails..."
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
                     className="max-w-sm"
                 />
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="ml-auto">
-                            Columns <ChevronDown />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        {table
-                            .getAllColumns()
-                            .filter((column) => column.getCanHide())
-                            .map((column) => {
-                                return (
-                                    <DropdownMenuCheckboxItem
-                                        key={column.id}
-                                        className="capitalize"
-                                        checked={column.getIsVisible()}
-                                        onCheckedChange={(value) =>
-                                            column.toggleVisibility(!!value)
-                                        }
-                                    >
-                                        {column.id}
-                                    </DropdownMenuCheckboxItem>
-                                )
-                            })}
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="ml-auto flex items-center gap-2">
+                    <Button onClick={() => setIsAddDialogOpen(true)}>
+                        Add Hotel
+                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline">
+                                Columns <ChevronDown />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            {table
+                                .getAllColumns()
+                                .filter((column) => column.getCanHide())
+                                .map((column) => {
+                                    return (
+                                        <DropdownMenuCheckboxItem
+                                            key={column.id}
+                                            className="capitalize"
+                                            checked={column.getIsVisible()}
+                                            onCheckedChange={(value) =>
+                                                column.toggleVisibility(!!value)
+                                            }
+                                        >
+                                            {column.id}
+                                        </DropdownMenuCheckboxItem>
+                                    )
+                                })}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
             </div>
             <div className="rounded-md border">
                 <Table>
@@ -261,6 +268,17 @@ export const HotelTable = () => {
                 }}
                 initialHotel={selectedHotel}
                 onUpdated={() => fetchHotels({ name: searchTerm, page })}
+            />
+            <AddHotelDialog
+                open={isAddDialogOpen}
+                onOpenChange={setIsAddDialogOpen}
+                onCreated={() => {
+                    if (page === 1) {
+                        fetchHotels({ name: searchTerm, page: 1 })
+                        return
+                    }
+                    setPage(1)
+                }}
             />
         </div>
     )
