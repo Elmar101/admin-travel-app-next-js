@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 
-const hotelFormSchema = z.object({
+export const hotelFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   description: z.string().optional(),
   location: z.string().min(2, { message: "Location is required." }),
@@ -30,32 +30,55 @@ const hotelFormSchema = z.object({
     .min(0, { message: "Price must be a positive number." }),
 })
 
+export type HotelFormValues = z.infer<typeof hotelFormSchema>
+
 type AddHotelFormProps = {
   onCreated?: () => void
+  onSubmitValues?: (values: HotelFormValues) => Promise<void> | void
+  initialValues?: Partial<HotelFormValues>
   onCancel?: () => void
   showCancelButton?: boolean
+  submitLabel?: string
+  submittingLabel?: string
+  resetOnSuccess?: boolean
 }
 
 const AddHotelForm = ({
   onCreated,
+  onSubmitValues,
+  initialValues,
   onCancel,
   showCancelButton = false,
+  submitLabel = "Add Hotel",
+  submittingLabel = "Adding...",
+  resetOnSuccess = true,
 }: AddHotelFormProps) => {
   const [isSubmitting, setIsSubmitting] = React.useState(false)
 
-  const form = useForm<z.infer<typeof hotelFormSchema>>({
+  const getDefaultValues = React.useCallback(
+    (): HotelFormValues => ({
+      name: initialValues?.name ?? "",
+      description: initialValues?.description ?? "",
+      location: initialValues?.location ?? "",
+      address: initialValues?.address ?? "",
+      rating: Number.isFinite(initialValues?.rating) ? Number(initialValues?.rating) : 0,
+      pricePerNight: Number.isFinite(initialValues?.pricePerNight)
+        ? Number(initialValues?.pricePerNight)
+        : 0,
+    }),
+    [initialValues]
+  )
+
+  const form = useForm<HotelFormValues>({
     resolver: zodResolver(hotelFormSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      location: "",
-      address: "",
-      rating: 0,
-      pricePerNight: 0,
-    },
+    defaultValues: getDefaultValues(),
   })
 
-  const onSubmit = async (values: z.infer<typeof hotelFormSchema>) => {
+  React.useEffect(() => {
+    form.reset(getDefaultValues())
+  }, [form, getDefaultValues])
+
+  const onSubmit = async (values: HotelFormValues) => {
     const hotelData = {
       name: values.name,
       description: values.description,
@@ -67,22 +90,28 @@ const AddHotelForm = ({
 
     setIsSubmitting(true)
     try {
-      const response = await fetch("/api/hotels", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(hotelData),
-      })
+      if (onSubmitValues) {
+        await onSubmitValues(values)
+      } else {
+        const response = await fetch("/api/hotels", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(hotelData),
+        })
 
-      if (!response.ok) {
-        throw new Error("Failed to add hotel")
+        if (!response.ok) {
+          throw new Error("Failed to add hotel")
+        }
       }
 
-      form.reset()
+      if (resetOnSuccess) {
+        form.reset(getDefaultValues())
+      }
       onCreated?.()
     } catch (error) {
-      console.error("Error adding hotel:", error)
+      console.error("Error submitting hotel form:", error)
     } finally {
       setIsSubmitting(false)
     }
@@ -192,7 +221,7 @@ const AddHotelForm = ({
             </Button>
           ) : null}
           <Button type="submit" className="w-full sm:w-auto" disabled={isSubmitting}>
-            {isSubmitting ? "Adding..." : "Add Hotel"}
+            {isSubmitting ? submittingLabel : submitLabel}
           </Button>
         </div>
       </form>

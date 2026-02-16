@@ -47,6 +47,24 @@ export const baseColumns: ColumnDef<Hotel>[] = [
         cell: ({ row }) => <div>{row.getValue("name")}</div>,
     },
     {
+        accessorKey: "description",
+        header: "Description",
+        cell: ({ row }) => {
+            const description = row.getValue("description") as string | null | undefined
+            return <div className="max-w-xs truncate">{description || "-"}</div>
+        },
+    },
+    {
+        accessorKey: "location",
+        header: "Location",
+        cell: ({ row }) => <div>{row.getValue("location")}</div>,
+    },
+    {
+        accessorKey: "address",
+        header: "Address",
+        cell: ({ row }) => <div className="max-w-xs truncate">{row.getValue("address")}</div>,
+    },
+    {
         accessorKey: "rating",
         header: "Rating",
         cell: ({ row }) => <div>{row.getValue("rating")}</div>,
@@ -95,12 +113,21 @@ export const HotelTable = () => {
     }, [searchTerm, fetchHotels]);
 
     const [selectedHotel, setSelectedHotel] = React.useState<Hotel | null>(null);
-    const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
+    const totalPages = Math.max(1, Math.ceil(totalCount / 10));
+
+    React.useEffect(() => {
+        if (page > totalPages) {
+            setPage(totalPages)
+        }
+    }, [page, totalPages]);
 
     const handleEditClick = React.useCallback((hotel: Hotel) => {
         setSelectedHotel(hotel)
-        setIsEditDialogOpen(true)
     }, [])
+
+    const refreshHotels = React.useCallback(async () => {
+        await fetchHotels({ name: searchTerm, page })
+    }, [fetchHotels, page, searchTerm])
 
     const columns = React.useMemo<ColumnDef<Hotel>[]>(() => {
         return[
@@ -142,9 +169,6 @@ export const HotelTable = () => {
             rowSelection,
         },
     })
-
-    const totalPages = Math.ceil(totalCount / 10);
-
 
     return (
         <div className="w-full">
@@ -254,20 +278,19 @@ export const HotelTable = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                        disabled={page === totalPages}
+                        disabled={page >= totalPages}
                         >
                         Next
                     </Button>
                 </div>
             </div>
             <EditHotelForm
-                open={isEditDialogOpen}
+                open={Boolean(selectedHotel)}
                 onOpenChange={(open) => {
-                    setIsEditDialogOpen(open)
                     if (!open) setSelectedHotel(null)
                 }}
                 initialHotel={selectedHotel}
-                onUpdated={() => fetchHotels({ name: searchTerm, page })}
+                onUpdated={refreshHotels}
             />
             <AddHotelDialog
                 open={isAddDialogOpen}

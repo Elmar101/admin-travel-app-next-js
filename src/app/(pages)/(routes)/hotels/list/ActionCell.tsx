@@ -22,7 +22,7 @@ interface ActionsCellProps {
 const ActionCell = ({hotel,onEditClick}:ActionsCellProps) => {
     return (
         <>
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className='h-8 w-8'>
                         <MoreHorizontal/>
@@ -31,7 +31,11 @@ const ActionCell = ({hotel,onEditClick}:ActionsCellProps) => {
                 <DropdownMenuContent>
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={()=>onEditClick(hotel)}>
+                    <DropdownMenuItem
+                      onSelect={() => {
+                        setTimeout(() => onEditClick(hotel), 0)
+                      }}
+                    >
                         Edit Hotel
                     </DropdownMenuItem>
                  
