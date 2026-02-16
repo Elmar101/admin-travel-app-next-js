@@ -33,10 +33,10 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Hotel, useHotelStore } from "@/store/useHotelStore"
-import ActionCell from "./ActionCell"
-import AddHotelDialog from "./AddHotelDialog"
+import ActionCell from "./_component/ActionCell"
+import AddHotelDialog from "./_component/AddHotelDialog"
 
-import EditHotelForm from "./EditHotelForm"
+import EditHotelForm from "./_component/EditHotelForm"
 
 
 

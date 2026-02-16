@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import AddHotelForm from "../add-new-hotel/AddHotelForm"
+import AddHotelForm from "./AddHotelForm"
 
 type AddHotelDialogProps = {
   open: boolean

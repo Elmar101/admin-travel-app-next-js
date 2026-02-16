@@ -1,5 +1,13 @@
 import * as React from "react"
-import { GalleryVerticalEnd, Minus, Plus } from "lucide-react"
+import Link from "next/link"
+import {
+  GalleryVerticalEnd,
+  Hotel,
+  House,
+  Minus,
+  Plus,
+  type LucideIcon,
+} from "lucide-react"
 
 import { SearchForm } from "@/components/sections/app-sidebar/search-form"
 import {
@@ -21,28 +29,31 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 
+type NavSubItem = {
+  title: string
+  url: string
+  isActive?: boolean
+}
+
+type NavMainItem = {
+  title: string
+  url: string
+  icon?: LucideIcon
+  items?: NavSubItem[]
+}
+
 // This is sample data.
-const data = {
+const data: { navMain: NavMainItem[] } = {
   navMain: [
     {
       title: "Home",
-      url: "#",
+      url: "/",
+      icon: House,
     },
     {
       title: "Hotels",
       url: "/hotels",
-      items: [
-        {
-          title: "Add New Hotel",
-          url: "/hotels/add-new-hotel",
-        },
-        {
-          title: "Hotel List",
-          url: "/hotels/list",
-          isActive: true,
-        },
-     
-      ],
+      icon: Hotel,
     }
   ],
 }
@@ -71,40 +82,48 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            {data.navMain.map((item, index) => (
-              <Collapsible
-                key={item.title}
-                defaultOpen={index === 1}
-                className="group/collapsible"
-              >
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton style={{cursor:`${item.items?.length ? "default" : "pointer"}`}}>
-                      {item.title}{" "}
-                     {item.items?.length && (<>
-                      <Plus className="ml-auto group-data-[state=open]/collapsible:hidden" />
-                      <Minus className="ml-auto group-data-[state=closed]/collapsible:hidden" /></>)}
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  {item.items?.length ? (
+            {data.navMain.map((item, index) =>
+              item.items?.length ? (
+                <Collapsible
+                  key={item.title}
+                  defaultOpen={index === 1}
+                  className="group/collapsible"
+                >
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton>
+                        {item.icon ? <item.icon className="size-4" /> : null}
+                        {item.title}
+                        <>
+                          <Plus className="ml-auto group-data-[state=open]/collapsible:hidden" />
+                          <Minus className="ml-auto group-data-[state=closed]/collapsible:hidden" />
+                        </>
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
                     <CollapsibleContent>
                       <SidebarMenuSub>
-                        {item.items.map((item) => (
-                          <SidebarMenuSubItem key={item.title}>
-                            <SidebarMenuSubButton
-                              asChild
-                              isActive={item.isActive}
-                            >
-                              <a href={item.url}>{item.title}</a>
+                        {item.items.map((subItem) => (
+                          <SidebarMenuSubItem key={subItem.title}>
+                            <SidebarMenuSubButton asChild isActive={subItem.isActive}>
+                              <Link href={subItem.url}>{subItem.title}</Link>
                             </SidebarMenuSubButton>
                           </SidebarMenuSubItem>
                         ))}
                       </SidebarMenuSub>
                     </CollapsibleContent>
-                  ) : null}
+                  </SidebarMenuItem>
+                </Collapsible>
+              ) : (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <Link href={item.url}>
+                      {item.icon ? <item.icon className="size-4" /> : null}
+                      {item.title}
+                    </Link>
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
-              </Collapsible>
-            ))}
+              )
+            )}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
