@@ -1,0 +1,10 @@
+{
+  "products": {
+    "cart": "cart"
+  },
+  "common": {
+    "locale": "English"
+  },
+   "Sign Up": "Sign Up",
+   "Sign In": "Sign In"
+}
